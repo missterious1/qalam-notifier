@@ -1,0 +1,29 @@
+name: Check QALAM marks
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 min (GitHub may delay runs a few minutes)
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency: qalam-check
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Check for new marks
+        env:
+          QALAM_USER: ${{ secrets.QALAM_USER }}
+          QALAM_PASS: ${{ secrets.QALAM_PASS }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python qalam_notifier.py
+      - name: Save state
+        run: |
+          git config user.name "qalam-bot"
+          git config user.email "qalam-bot@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "Update marks state" && git push)
