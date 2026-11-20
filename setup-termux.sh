@@ -18,12 +18,12 @@ read -r -p "QALAM username: " QU
 read -r -s -p "QALAM password (hidden while typing): " QP; echo
 read -r -p "ntfy topic name: " NT
 umask 077
-cat > "$DIR/.env" <<EOT
-export QALAM_USER='$QU'
-export QALAM_PASS='$QP'
-export NTFY_TOPIC='$NT'
-export STATE_FILE='$DIR/state.json'
-EOT
+{
+  printf 'export QALAM_USER=%q\n' "$QU"
+  printf 'export QALAM_PASS=%q\n' "$QP"
+  printf 'export NTFY_TOPIC=%q\n' "$NT"
+  printf 'export STATE_FILE=%q\n' "$DIR/state.json"
+} > "$DIR/.env"
 
 . "$DIR/.env"
 echo
