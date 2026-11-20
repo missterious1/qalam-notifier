@@ -16,6 +16,7 @@ Config (environment variables):
 Usage:
   python qalam_notifier.py            # check once, notify on changes
   python qalam_notifier.py --test     # send a test notification only
+  python qalam_notifier.py --summary  # log in and list courses found (no marks shown)
   python qalam_notifier.py --dump     # log in and print what was scraped (debugging)
   python qalam_notifier.py --loop 600 # check every 600 seconds forever
 """
@@ -174,7 +175,7 @@ def check_once(user, password):
         body = "\n".join(rows[:8]) + (f"\n…and {len(rows) - 8} more" if len(rows) > 8 else "")
         notify(f"New marks: {course}", body)
     save_state(new)
-    print(f"Checked {len(new)} courses, {len(changes)} with updates.")
+    print(time.strftime("%Y-%m-%d %H:%M"), f"Checked {len(new)} courses, {len(changes)} with updates.", flush=True)
 
 
 def main():
@@ -185,6 +186,13 @@ def main():
     user, password = os.environ.get("QALAM_USER"), os.environ.get("QALAM_PASS")
     if not user or not password:
         sys.exit("Set QALAM_USER and QALAM_PASS environment variables.")
+    if "--summary" in args:
+        s = login(user, password)
+        snap = snapshot(s)
+        print(f"Login OK. Found {len(snap)} courses:")
+        for c in snap.values():
+            print(f"  - {c['name']}: {len(c['rows'])} marks rows")
+        return
     if "--dump" in args:
         s = login(user, password)
         print(json.dumps(snapshot(s), indent=2, ensure_ascii=False))
@@ -195,7 +203,7 @@ def main():
             try:
                 check_once(user, password)
             except Exception as e:  # keep looping through network hiccups
-                print("Error:", e)
+                print(time.strftime("%Y-%m-%d %H:%M"), "Error:", e, flush=True)
             time.sleep(interval)
     check_once(user, password)
 
