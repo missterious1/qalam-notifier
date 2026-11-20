@@ -5,7 +5,7 @@ DIR="$HOME/qalam"
 RAW="https://raw.githubusercontent.com/missterious1/qalam-notifier/main"
 echo "== Installing Python (takes 1-3 minutes) =="
 pkg update -y >/dev/null 2>&1 || true
-pkg install -y python >/dev/null
+pkg install -y python >/dev/null 2>&1
 pip install -q requests beautifulsoup4
 mkdir -p "$DIR"
 curl -fsSL "$RAW/qalam_notifier.py" -o "$DIR/qalam_notifier.py"
@@ -14,9 +14,9 @@ chmod +x "$DIR/start.sh"
 
 echo
 echo "== Your details (saved only on this phone) =="
-read -r -p "QALAM username: " QU
-read -r -s -p "QALAM password (hidden while typing): " QP; echo
-read -r -p "ntfy topic name: " NT
+read -r -p "QALAM username: " QU < /dev/tty
+read -r -s -p "QALAM password (hidden while typing): " QP < /dev/tty; echo
+read -r -p "ntfy topic name: " NT < /dev/tty
 umask 077
 {
   printf 'export QALAM_USER=%q\n' "$QU"
